@@ -1,5 +1,16 @@
 package baudot
 
+import (
+	"errors"
+	"fmt"
+)
+
+const (
+	null byte = 0
+	fs   byte = 27
+	ls   byte = 31
+)
+
 var letters = map[byte]rune{
 	1:  'E',
 	2:  '\n',
@@ -128,7 +139,28 @@ var charmap = map[rune][2]int8{
 // Encode string into byte array represent the sequence of Baudot-Murray code(ITA2)
 // The sequence always starts with a null Control followed by a LS(Shift to Letters) Control
 func Encode(msg string) ([]byte, error) {
-	return []byte{}, nil
+	// 0:letters, 1:figures
+	currentCharset := 0
+	shifters := [2]byte{ls, fs}
+
+	codes := []byte{null, ls}
+	for _, char := range msg {
+		charValues, ok := charmap[char]
+		if !ok {
+			errMsg := fmt.Sprintf("Invalid Char: %c", char)
+			return nil, errors.New(errMsg)
+		}
+
+		if code := charValues[currentCharset]; code != -1 {
+			codes = append(codes, byte(code))
+		} else {
+			currentCharset ^= 1
+			codes = append(codes, shifters[currentCharset])
+			codes = append(codes, byte(charValues[currentCharset]))
+		}
+	}
+
+	return codes, nil
 }
 
 // Decode Baudot-Murray code(ITA2) to string
