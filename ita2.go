@@ -1,5 +1,7 @@
 package ita2
 
+// ITA2(International Telegraph Alphabet No.2) as known as Baubot-Murray code which is a modication of Baudot code(ITA1)
+
 import (
 	"errors"
 	"fmt"
@@ -147,7 +149,7 @@ var charmap = map[rune][2]int8{
 
 // Encode string into byte array represent the sequence of Baudot-Murray code(ITA2)
 // The sequence always starts with a null Control followed by a LS(Shift to Letters) Control
-func Encode(msg string) ([]byte, error) {
+func Encode(msg string, ignoreError bool) ([]byte, error) {
 	currentCharset := Letters
 	shifters := [2]byte{ls, fs}
 
@@ -156,7 +158,11 @@ func Encode(msg string) ([]byte, error) {
 		code, shifted, err := EncodeChar(char, currentCharset)
 
 		if err != nil {
-			return nil, err
+			if ignoreError {
+				continue
+			} else {
+				return nil, err
+			}
 		}
 
 		if shifted {
@@ -171,7 +177,7 @@ func Encode(msg string) ([]byte, error) {
 }
 
 // Decode Baudot-Murray code(ITA2) to string
-func Decode(codes []byte) (string, error) {
+func Decode(codes []byte, ignoreError bool) (string, error) {
 	var str []rune
 	currentCharset := Letters
 
@@ -179,7 +185,11 @@ func Decode(codes []byte) (string, error) {
 		ch, shifted, err := DecodeChar(eachCode, currentCharset)
 
 		if err != nil {
-			return "", err
+			if ignoreError {
+				continue
+			} else {
+				return "", err
+			}
 		}
 
 		if shifted {
