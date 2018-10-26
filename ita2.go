@@ -5,13 +5,23 @@ import (
 	"fmt"
 )
 
+type Charset byte
+
+const (
+	Letters Charset = 0
+	Figures Charset = 1
+)
+
 const (
 	null byte = 0
-	fs   byte = 27
-	ls   byte = 31
+	// Shift to Figures
+	fs byte = 27
+	// Shift to Letters
+	ls byte = 31
 )
 
 var letters = map[byte]rune{
+	0:  '\u0000',
 	1:  'E',
 	2:  '\n',
 	3:  'A',
@@ -44,6 +54,7 @@ var letters = map[byte]rune{
 }
 
 var figures = map[byte]rune{
+	0:  '\u0000',
 	1:  '3',
 	2:  '\n',
 	3:  '-',
@@ -75,10 +86,8 @@ var figures = map[byte]rune{
 	30: ';',
 }
 
-// the character set switch between letters and figures
-var charset *map[byte]rune
-
 var charmap = map[rune][2]int8{
+	'\u0000': {0, 0},
 	'E':      {1, -1},
 	'\n':     {2, 2},
 	'A':      {3, -1},
@@ -139,25 +148,23 @@ var charmap = map[rune][2]int8{
 // Encode string into byte array represent the sequence of Baudot-Murray code(ITA2)
 // The sequence always starts with a null Control followed by a LS(Shift to Letters) Control
 func Encode(msg string) ([]byte, error) {
-	// 0:letters, 1:figures
-	currentCharset := 0
+	currentCharset := Letters
 	shifters := [2]byte{ls, fs}
 
 	codes := []byte{null, ls}
 	for _, char := range msg {
-		charValues, ok := charmap[char]
-		if !ok {
-			errMsg := fmt.Sprintf("Invalid Char: %c", char)
-			return nil, errors.New(errMsg)
+		code, shifted, err := EncodeChar(char, currentCharset)
+
+		if err != nil {
+			return nil, err
 		}
 
-		if code := charValues[currentCharset]; code != -1 {
-			codes = append(codes, byte(code))
-		} else {
+		if shifted {
 			currentCharset ^= 1
 			codes = append(codes, shifters[currentCharset])
-			codes = append(codes, byte(charValues[currentCharset]))
 		}
+
+		codes = append(codes, code)
 	}
 
 	return codes, nil
@@ -165,15 +172,71 @@ func Encode(msg string) ([]byte, error) {
 
 // Decode Baudot-Murray code(ITA2) to string
 func Decode(codes []byte) (string, error) {
-	return "", nil
+	var str []rune
+	currentCharset := Letters
+
+	for _, eachCode := range codes {
+		ch, shifted, err := DecodeChar(eachCode, currentCharset)
+
+		if err != nil {
+			return "", err
+		}
+
+		if ch == '\u0000' {
+			continue
+		}
+
+		if shifted {
+			currentCharset ^= 1
+		} else {
+			str = append(str, ch)
+		}
+	}
+
+	return string(str), nil
 }
 
 // EncodeChar encodes a character into Baudot-Murray code(ITA2)
-func EncodeChar(c rune) (byte, error) {
-	return 1, nil
+func EncodeChar(char rune, currentCharset Charset) (byte, bool, error) {
+	shifted := false
+
+	charValues, ok := charmap[char]
+	if !ok {
+		errMsg := fmt.Sprintf("Invalid Char: %c", char)
+
+		return 0, false, errors.New(errMsg)
+	}
+
+	code := charValues[currentCharset]
+	if code == -1 {
+		shifted = true
+	}
+
+	return byte(code), shifted, nil
 }
 
 // DecodeChar decodes a Baudot-Murray code(ITA2) to rune
-func DecodeChar(byte) (rune, error) {
-	return '1', nil
+func DecodeChar(code byte, currentCharset Charset) (rune, bool, error) {
+	var charset map[byte]rune
+
+	if code == ls {
+		return '\u0000', currentCharset != Letters, nil
+	} else if code == fs {
+		return '\u0000', currentCharset != Figures, nil
+	}
+
+	if currentCharset == Letters {
+		charset = letters
+	} else {
+		charset = figures
+	}
+
+	char, ok := charset[code]
+	if !ok {
+		errMsg := fmt.Sprintf("Invalid Code: %d", code)
+
+		return '\u0000', false, errors.New(errMsg)
+	}
+
+	return char, false, nil
 }
