@@ -1,4 +1,4 @@
-package baudot
+package ita2
 
 import (
 	"errors"
