@@ -182,15 +182,16 @@ func Decode(codes []byte) (string, error) {
 			return "", err
 		}
 
+		if shifted {
+			currentCharset ^= 1
+			continue
+		}
+
 		if ch == '\u0000' {
 			continue
 		}
 
-		if shifted {
-			currentCharset ^= 1
-		} else {
-			str = append(str, ch)
-		}
+		str = append(str, ch)
 	}
 
 	return string(str), nil
@@ -210,6 +211,7 @@ func EncodeChar(char rune, currentCharset Charset) (byte, bool, error) {
 	code := charValues[currentCharset]
 	if code == -1 {
 		shifted = true
+		code = charValues[currentCharset^1]
 	}
 
 	return byte(code), shifted, nil
