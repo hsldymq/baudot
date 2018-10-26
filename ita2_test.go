@@ -146,6 +146,7 @@ func TestEncode(t *testing.T) {
 	tt := []struct {
 		caseName   string
 		msg        string
+		ignErr     bool
 		expect     []byte
 		shouldFail bool
 		failedText string
@@ -153,6 +154,7 @@ func TestEncode(t *testing.T) {
 		{
 			caseName:   "test letters and figures",
 			msg:        "X&Y",
+			ignErr:     false,
 			expect:     []byte{0, 31, 29, 27, 26, 31, 21},
 			shouldFail: false,
 			failedText: fmt.Sprintf("expect %v, got %%v", []byte{0, 31, 29, 27, 26, 31, 21}),
@@ -160,15 +162,24 @@ func TestEncode(t *testing.T) {
 		{
 			caseName:   "test invalid msg",
 			msg:        "1 + 1 = 2",
+			ignErr:     false,
 			expect:     nil,
 			shouldFail: true,
 			failedText: "expect an error, got %v",
+		},
+		{
+			caseName:   "test invalid msg, ignore error",
+			msg:        "1 + 1 = 2",
+			ignErr:     true,
+			expect:     []byte{0, 31, 27, 23, 4, 17, 4, 23, 4, 4, 19},
+			shouldFail: true,
+			failedText: fmt.Sprintf("expect %v, got %%v", []byte{0, 31, 27, 23, 4, 17, 4, 23, 4, 4, 19}),
 		},
 	}
 
 	for _, tc := range tt {
 		t.Run(tc.caseName, func(t *testing.T) {
-			codes, err := Encode(tc.msg)
+			codes, err := Encode(tc.msg, tc.ignErr)
 			if err != nil {
 				if !tc.shouldFail {
 					t.Errorf(tc.failedText, fmt.Sprintf("%v, %v", codes, err))
@@ -192,6 +203,7 @@ func TestDecode(t *testing.T) {
 	tt := []struct {
 		caseName   string
 		codes      []byte
+		ignErr     bool
 		expect     string
 		shouldFail bool
 		failedText string
@@ -199,6 +211,7 @@ func TestDecode(t *testing.T) {
 		{
 			caseName:   "test decoding valid code",
 			codes:      []byte{0, 31, 29, 27, 26, 31, 21},
+			ignErr:     false,
 			expect:     "X&Y",
 			shouldFail: false,
 			failedText: "expect 'X&Y', got %v",
@@ -206,6 +219,7 @@ func TestDecode(t *testing.T) {
 		{
 			caseName:   "test decoding valid code contains null",
 			codes:      []byte{0, 27, 1, 31, 22, 0, 0, 24, 27, 26, 0, 31, 10, 27, 19, 31, 9, 27, 19},
+			ignErr:     false,
 			expect:     "3PO&R2D2",
 			shouldFail: false,
 			failedText: "expect '3PO&R2D2', got %v",
@@ -213,7 +227,16 @@ func TestDecode(t *testing.T) {
 		{
 			caseName:   "test valid code",
 			codes:      []byte{0, 27, 1, 31, 100, 12},
+			ignErr:     false,
 			expect:     "",
+			shouldFail: true,
+			failedText: "expect an error, got %v",
+		},
+		{
+			caseName:   "test valid code, ignore error",
+			codes:      []byte{0, 27, 1, 31, 100, 12},
+			ignErr:     true,
+			expect:     "3N",
 			shouldFail: true,
 			failedText: "expect an error, got %v",
 		},
@@ -221,7 +244,7 @@ func TestDecode(t *testing.T) {
 
 	for _, tc := range tt {
 		t.Run(tc.caseName, func(t *testing.T) {
-			str, err := Decode(tc.codes)
+			str, err := Decode(tc.codes, tc.ignErr)
 			if err != nil {
 				if !tc.shouldFail {
 					t.Errorf(tc.failedText, fmt.Sprintf("%v, %v", str, err))
