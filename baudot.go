@@ -25,8 +25,18 @@ type ita2 struct {
 	ignErr bool
 }
 
+type ustty struct {
+	ignErr bool
+}
+
 func NewITA2(ignoreError bool) *ita2 {
 	return &ita2{
+		ignErr: ignoreError,
+	}
+}
+
+func NewUSTTY(ignoreError bool) *ustty {
+	return &ustty{
 		ignErr: ignoreError,
 	}
 }

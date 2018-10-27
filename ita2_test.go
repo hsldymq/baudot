@@ -163,7 +163,7 @@ func TestEncode(t *testing.T) {
 		},
 		{
 			caseName:   "test invalid msg",
-			msg:        "1 + 1 = 2",
+			msg:        "1 + 1 ~ 2",
 			ignErr:     false,
 			expect:     nil,
 			shouldFail: true,
@@ -171,7 +171,7 @@ func TestEncode(t *testing.T) {
 		},
 		{
 			caseName:   "test invalid msg, ignore error",
-			msg:        "1 + 1 = 2",
+			msg:        "1 + 1 ~ 2",
 			ignErr:     true,
 			expect:     []byte{0, 31, 27, 23, 4, 17, 4, 23, 4, 4, 19},
 			shouldFail: true,

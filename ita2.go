@@ -8,73 +8,7 @@ import (
 	"fmt"
 )
 
-var lettersITA2 = map[byte]rune{
-	0:  '\u0000',
-	1:  'E',
-	2:  '\n',
-	3:  'A',
-	4:  ' ',
-	5:  'S',
-	6:  'I',
-	7:  'U',
-	8:  '\r',
-	9:  'D',
-	10: 'R',
-	11: 'J',
-	12: 'N',
-	13: 'F',
-	14: 'C',
-	15: 'K',
-	16: 'T',
-	17: 'Z',
-	18: 'L',
-	19: 'W',
-	20: 'H',
-	21: 'Y',
-	22: 'P',
-	23: 'Q',
-	24: 'O',
-	25: 'B',
-	26: 'G',
-	28: 'M',
-	29: 'X',
-	30: 'V',
-}
-
-var figuresITA2 = map[byte]rune{
-	0:  '\u0000',
-	1:  '3',
-	2:  '\n',
-	3:  '-',
-	4:  ' ',
-	5:  '\'',
-	6:  '8',
-	7:  '7',
-	8:  '\r',
-	9:  '\u0005',
-	10: '4',
-	11: '\u0007',
-	12: ',',
-	13: '!',
-	14: ':',
-	15: '(',
-	16: '5',
-	17: '+',
-	18: ')',
-	19: '2',
-	20: '£',
-	21: '6',
-	22: '0',
-	23: '1',
-	24: '9',
-	25: '?',
-	26: '&',
-	28: '.',
-	29: '/',
-	30: ';',
-}
-
-var charmap = map[rune][2]int8{
+var charmapITA2 = map[rune][2]int8{
 	'\u0000': {0, 0},
 	'E':      {1, -1},
 	'\n':     {2, 2},
@@ -197,7 +131,7 @@ func (c *ita2) Decode(codes []byte) (string, error) {
 func (c *ita2) EncodeChar(char rune, currentCharset Charset) (byte, bool, error) {
 	shifted := false
 
-	charValues, ok := charmap[char]
+	charValues, ok := charmapITA2[char]
 	if !ok {
 		// always return error, not affect by ignErr field
 		return 0, false, fmt.Errorf("Invalid Char: %c", char)
