@@ -17,12 +17,12 @@ func TestUSTTYEncodeChar(t *testing.T) {
 	}{
 		{
 			caseName:    "test regular char",
-			char:        'R',
-			charset:     Letters,
-			expectCode:  10,
+			char:        ';',
+			charset:     Figures,
+			expectCode:  30,
 			expectShift: false,
 			shouldFail:  false,
-			failedText:  "code for 'R' should be 10, got %v",
+			failedText:  "code for ';' should be 30, got %v",
 		},
 		{
 			caseName:    "test invalid char",
@@ -90,13 +90,22 @@ func TestUSTTYDecodeChar(t *testing.T) {
 			failedText:  "expect 'R', got %v",
 		},
 		{
-			caseName:    "test figure code",
-			code:        10,
+			caseName:    "test figure code 1",
+			code:        20,
 			charset:     Figures,
-			expectChar:  '4',
+			expectChar:  '#',
 			expectShift: false,
 			shouldFail:  false,
-			failedText:  "expect '4', got %v",
+			failedText:  "expect '#', got %v",
+		},
+		{
+			caseName:    "test figure code 2",
+			code:        11,
+			charset:     Figures,
+			expectChar:  '\'',
+			expectShift: false,
+			shouldFail:  false,
+			failedText:  "expect single quote('), got %v",
 		},
 		{
 			caseName:    "test invalid code",

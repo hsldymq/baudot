@@ -18,16 +18,25 @@ const (
 	FS byte = 27
 	// ITA2 Shift to Letters
 	LS byte = 31
+	// ITA1 Shift to Letters
+	LS_ITA1 byte = 1
+	// ITA1 Shift to Figures
+	FS_ITA1 byte = 2
 )
 
 const (
 	versionITA2  version = 0
 	versionUSTTY version = 1
+	versionITA1  version = 2
 )
 
 type Codec interface {
 	Encode(string) ([]byte, error)
 	Decode([]byte) (string, error)
+}
+
+type ita1 struct {
+	ignErr bool
 }
 
 type ita2 struct {
@@ -36,6 +45,12 @@ type ita2 struct {
 
 type ustty struct {
 	ignErr bool
+}
+
+func NewITA1(ignoreError bool) *ita1 {
+	return &ita1{
+		ignErr: ignoreError,
+	}
 }
 
 func NewITA2(ignoreError bool) *ita2 {
@@ -121,6 +136,7 @@ func encodeChar(char rune, currentCharset Charset, ver version) (byte, Charset, 
 		charValues, ok = charmapITA2[char]
 	} else if ver == versionUSTTY {
 		charValues, ok = charmapUSTTY[char]
+	} else if ver == versionITA1 {
 	} else {
 		return '\u0000', currentCharset, fmt.Errorf("Unsupported version: %d", ver)
 	}
@@ -151,8 +167,10 @@ func decodeChar(code byte, currentCharset Charset, ver version) (rune, Charset, 
 
 		if currentCharset == Letters {
 			charset = lettersITA2
-		} else {
+		} else if ver == versionITA2 {
 			charset = figuresITA2
+		} else {
+			charset = figuresUSTTY
 		}
 	} else {
 		return '\u0000', currentCharset, fmt.Errorf("Unsupported version: %d", ver)
