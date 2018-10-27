@@ -1,10 +1,8 @@
-package ita2
+package baudot
 
 import (
 	"fmt"
 	"testing"
-
-	. "github.com/hsldymq/baudot"
 )
 
 func TestEncodeChar(t *testing.T) {
@@ -55,9 +53,10 @@ func TestEncodeChar(t *testing.T) {
 		},
 	}
 
+	c := NewITA2(false)
 	for _, tc := range tt {
 		t.Run(tc.caseName, func(t *testing.T) {
-			code, shifted, err := EncodeChar(tc.char, tc.charset)
+			code, shifted, err := c.EncodeChar(tc.char, tc.charset)
 			if err != nil {
 				if !tc.shouldFail {
 					t.Errorf(tc.failedText, fmt.Sprintf("%v, %v, %v", code, shifted, err))
@@ -128,9 +127,10 @@ func TestDecodeChar(t *testing.T) {
 		},
 	}
 
+	c := NewITA2(false)
 	for _, tc := range tt {
 		t.Run(tc.caseName, func(t *testing.T) {
-			char, shifted, err := DecodeChar(tc.code, tc.charset)
+			char, shifted, err := c.DecodeChar(tc.code, tc.charset)
 			if err != nil {
 				if !tc.shouldFail {
 					t.Errorf(tc.failedText, fmt.Sprintf("%v, %v, %v", char, shifted, err))
@@ -179,9 +179,11 @@ func TestEncode(t *testing.T) {
 		},
 	}
 
+	c := NewITA2(false)
 	for _, tc := range tt {
 		t.Run(tc.caseName, func(t *testing.T) {
-			codes, err := Encode(tc.msg, tc.ignErr)
+			c.ignErr = tc.ignErr
+			codes, err := c.Encode(tc.msg)
 			if err != nil {
 				if !tc.shouldFail {
 					t.Errorf(tc.failedText, fmt.Sprintf("%v, %v", codes, err))
@@ -244,9 +246,11 @@ func TestDecode(t *testing.T) {
 		},
 	}
 
+	c := NewITA2(false)
 	for _, tc := range tt {
 		t.Run(tc.caseName, func(t *testing.T) {
-			str, err := Decode(tc.codes, tc.ignErr)
+			c.ignErr = tc.ignErr
+			str, err := c.Decode(tc.codes)
 			if err != nil {
 				if !tc.shouldFail {
 					t.Errorf(tc.failedText, fmt.Sprintf("%v, %v", str, err))

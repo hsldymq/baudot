@@ -2,13 +2,10 @@
  * ITA2(International Telegraph Alphabet No.2) as known as Baubot-Murray code which is a modication of Baudot code(ITA1)
  */
 
-package ita2
+package baudot
 
 import (
-	"errors"
 	"fmt"
-
-	. "github.com/hsldymq/baudot"
 )
 
 const (
@@ -146,16 +143,16 @@ var charmap = map[rune][2]int8{
 
 // Encode string into byte array represent the sequence of Baudot-Murray code(ITA2)
 // The sequence always starts with a null Control followed by a LS(Shift to Letters) Control
-func Encode(msg string, ignoreError bool) ([]byte, error) {
+func (c *ita2) Encode(msg string) ([]byte, error) {
 	currentCharset := Letters
 	shifters := [2]byte{ls, fs}
 
 	codes := []byte{null, ls}
 	for _, char := range msg {
-		code, shifted, err := EncodeChar(char, currentCharset)
+		code, shifted, err := c.EncodeChar(char, currentCharset)
 
 		if err != nil {
-			if ignoreError {
+			if c.ignErr {
 				continue
 			} else {
 				return nil, err
@@ -174,15 +171,15 @@ func Encode(msg string, ignoreError bool) ([]byte, error) {
 }
 
 // Decode Baudot-Murray code(ITA2) to string
-func Decode(codes []byte, ignoreError bool) (string, error) {
+func (c *ita2) Decode(codes []byte) (string, error) {
 	var str []rune
 	currentCharset := Letters
 
 	for _, eachCode := range codes {
-		ch, shifted, err := DecodeChar(eachCode, currentCharset)
+		ch, shifted, err := c.DecodeChar(eachCode, currentCharset)
 
 		if err != nil {
-			if ignoreError {
+			if c.ignErr {
 				continue
 			} else {
 				return "", err
@@ -205,14 +202,13 @@ func Decode(codes []byte, ignoreError bool) (string, error) {
 }
 
 // EncodeChar encodes a character into Baudot-Murray code(ITA2)
-func EncodeChar(char rune, currentCharset Charset) (byte, bool, error) {
+func (c *ita2) EncodeChar(char rune, currentCharset Charset) (byte, bool, error) {
 	shifted := false
 
 	charValues, ok := charmap[char]
 	if !ok {
-		errMsg := fmt.Sprintf("Invalid Char: %c", char)
-
-		return 0, false, errors.New(errMsg)
+		// always return error, not affect by ignErr field
+		return 0, false, fmt.Errorf("Invalid Char: %c", char)
 	}
 
 	code := charValues[currentCharset]
@@ -225,7 +221,7 @@ func EncodeChar(char rune, currentCharset Charset) (byte, bool, error) {
 }
 
 // DecodeChar decodes a Baudot-Murray code(ITA2) to rune
-func DecodeChar(code byte, currentCharset Charset) (rune, bool, error) {
+func (c *ita2) DecodeChar(code byte, currentCharset Charset) (rune, bool, error) {
 	var charset map[byte]rune
 
 	if code == ls {
@@ -242,9 +238,8 @@ func DecodeChar(code byte, currentCharset Charset) (rune, bool, error) {
 
 	char, ok := charset[code]
 	if !ok {
-		errMsg := fmt.Sprintf("Invalid Code: %d", code)
-
-		return '\u0000', false, errors.New(errMsg)
+		// always return error, not affect by ignErr field
+		return '\u0000', false, fmt.Errorf("Invalid Code: %d", code)
 	}
 
 	return char, false, nil
