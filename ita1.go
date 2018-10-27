@@ -1,5 +1,6 @@
 /*
- * ITA1(International Telegraph Alphabet No.1) is Original Baudot Code
+ * ITA1(International Telegraph Alphabet No.1) is Original Baudot Code.
+ * This is The UK Version.
  */
 
 package baudot
