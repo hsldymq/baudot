@@ -1,5 +1,5 @@
 /*
- * ITA2(International Telegraph Alphabet No.2) as known as Baubot-Murray code which is a modication of Baudot code(ITA1)
+ * ITA1(International Telegraph Alphabet No.1) is Original Baudot Code
  */
 
 package baudot
