@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func TestEncodeChar(t *testing.T) {
+func TestITA2EncodeChar(t *testing.T) {
 	tt := []struct {
 		caseName    string
 		char        rune
@@ -70,7 +70,7 @@ func TestEncodeChar(t *testing.T) {
 	}
 }
 
-func TestDecodeChar(t *testing.T) {
+func TestITA2DecodeChar(t *testing.T) {
 	tt := []struct {
 		caseName    string
 		code        byte
@@ -144,7 +144,7 @@ func TestDecodeChar(t *testing.T) {
 	}
 }
 
-func TestEncode(t *testing.T) {
+func TestITA2Encode(t *testing.T) {
 	tt := []struct {
 		caseName   string
 		msg        string
@@ -203,7 +203,7 @@ func TestEncode(t *testing.T) {
 	}
 }
 
-func TestDecode(t *testing.T) {
+func TestITA2Decode(t *testing.T) {
 	tt := []struct {
 		caseName   string
 		codes      []byte
