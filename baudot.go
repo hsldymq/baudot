@@ -25,9 +25,9 @@ const (
 )
 
 const (
-	versionITA2  version = 0
-	versionUSTTY version = 1
-	versionITA1  version = 2
+	versionITA1  version = 0
+	versionITA2  version = 1
+	versionUSTTY version = 2
 )
 
 type Codec interface {
@@ -68,12 +68,24 @@ func NewUSTTY(ignoreError bool) *ustty {
 // The sequence always starts with a null Control followed by a LS(Shift to Letters) Control
 func encode(msg string, ignoreError bool, ver version) ([]byte, error) {
 	var (
+		shifters       [2]byte
+		shiftersITA2   = [2]byte{LS, FS}
+		shiftersITA1   = [2]byte{LS_ITA1, FS_ITA1}
 		currentCharset = Letters
-		shifters       = [2]byte{LS, FS}
 		codes          = []byte{NULL, LS}
 	)
 
 	for _, char := range msg {
+		if ver == versionITA1 {
+			shifters = shiftersITA1
+		} else if ver == versionITA2 || ver == versionUSTTY {
+			shifters = shiftersITA2
+		} else if ignoreError {
+			break
+		} else {
+			return nil, fmt.Errorf("")
+		}
+
 		code, shiftedCharset, err := encodeChar(char, currentCharset, ver)
 
 		if err != nil {
@@ -132,11 +144,12 @@ func encodeChar(char rune, currentCharset Charset, ver version) (byte, Charset, 
 		ok             bool
 	)
 
-	if ver == versionITA2 {
+	if ver == versionITA1 {
+		charValues, ok = charmapITA1[char]
+	} else if ver == versionITA2 {
 		charValues, ok = charmapITA2[char]
 	} else if ver == versionUSTTY {
 		charValues, ok = charmapUSTTY[char]
-	} else if ver == versionITA1 {
 	} else {
 		return '\u0000', currentCharset, fmt.Errorf("Unsupported version: %d", ver)
 	}
@@ -158,7 +171,19 @@ func encodeChar(char rune, currentCharset Charset, ver version) (byte, Charset, 
 func decodeChar(code byte, currentCharset Charset, ver version) (rune, Charset, error) {
 	var charset map[byte]rune
 
-	if ver == versionITA2 || ver == versionUSTTY {
+	if ver == versionITA1 {
+		if code == LS_ITA1 {
+			return '\u0000', Letters, nil
+		} else if code == FS_ITA1 {
+			return '\u0000', Figures, nil
+		}
+
+		if currentCharset == Letters {
+			charset = lettersITA1
+		} else {
+			charset = figuresITA1
+		}
+	} else if ver == versionITA2 || ver == versionUSTTY {
 		if code == LS {
 			return '\u0000', Letters, nil
 		} else if code == FS {
