@@ -8,15 +8,7 @@ import (
 	"fmt"
 )
 
-const (
-	null byte = 0
-	// Shift to Figures
-	fs byte = 27
-	// Shift to Letters
-	ls byte = 31
-)
-
-var letters = map[byte]rune{
+var lettersITA2 = map[byte]rune{
 	0:  '\u0000',
 	1:  'E',
 	2:  '\n',
@@ -49,7 +41,7 @@ var letters = map[byte]rune{
 	30: 'V',
 }
 
-var figures = map[byte]rune{
+var figuresITA2 = map[byte]rune{
 	0:  '\u0000',
 	1:  '3',
 	2:  '\n',
@@ -145,9 +137,9 @@ var charmap = map[rune][2]int8{
 // The sequence always starts with a null Control followed by a LS(Shift to Letters) Control
 func (c *ita2) Encode(msg string) ([]byte, error) {
 	currentCharset := Letters
-	shifters := [2]byte{ls, fs}
+	shifters := [2]byte{LS, FS}
 
-	codes := []byte{null, ls}
+	codes := []byte{NULL, LS}
 	for _, char := range msg {
 		code, shifted, err := c.EncodeChar(char, currentCharset)
 
@@ -224,16 +216,16 @@ func (c *ita2) EncodeChar(char rune, currentCharset Charset) (byte, bool, error)
 func (c *ita2) DecodeChar(code byte, currentCharset Charset) (rune, bool, error) {
 	var charset map[byte]rune
 
-	if code == ls {
+	if code == LS {
 		return '\u0000', currentCharset != Letters, nil
-	} else if code == fs {
+	} else if code == FS {
 		return '\u0000', currentCharset != Figures, nil
 	}
 
 	if currentCharset == Letters {
-		charset = letters
+		charset = lettersITA2
 	} else {
-		charset = figures
+		charset = figuresITA2
 	}
 
 	char, ok := charset[code]
