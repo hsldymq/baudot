@@ -18,14 +18,14 @@ func main() {
     // baudot.newITA2(false)
     // baudot.newUSTTY(false)
 
-    codes, error := codec.Encode("X&Y")    // 编码消息为字节数组
-    if error {
+    codes, err := codec.Encode("X&Y")    // 编码消息为字节数组
+    if err {
         // handle error
     }
 
     //////
-    message, error := codec.Decode(codes)  // 解码博多码为消息字符串
-    if error {
+    message, err := codec.Decode(codes)  // 解码博多码为消息字符串
+    if err {
         // handle error
     }
 
