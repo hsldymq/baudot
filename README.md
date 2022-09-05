@@ -4,7 +4,7 @@
 
 原版的博多码在早期在英国被推广使用,但是真正被大量普及是Donald Murray对电传打字机传输消息的改良由此在1901年对Baudot Code的改良,他的改良版本被成为Baudot-Murray Code,此后被标准化为International Telegraph Alphabet No.2(ITA2, 原版为ITA1), 它算得上是ASCII码的前身.
 
-这个库是我无聊时候写的,实现了对ITA1和ITA2(standard及USTTY变体)编解码的功能.
+这个库实现了对ITA1和ITA2(standard及USTTY变体)编解码的功能.
 
 #### Example
 
